@@ -3,7 +3,7 @@
  * Plugin Name: 8am Bunny Video Library
  * Plugin URI: https://github.com/eightam/eightam-bunny-video-library
  * Description: Integration with Bunny.net video library for WordPress
- * Version: 1.1.0
+ * Version: 1.1.1
  * Author: 8am GmbH
  * Author URI: https://8am.ch
  * License: MIT
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('EIGHTAM_BUNNY_VIDEO_LIBRARY_VERSION', '1.0.3');
+define('EIGHTAM_BUNNY_VIDEO_LIBRARY_VERSION', '1.1.1');
 define('EIGHTAM_BUNNY_VIDEO_LIBRARY_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('EIGHTAM_BUNNY_VIDEO_LIBRARY_PLUGIN_URL', plugin_dir_url(__FILE__));
 

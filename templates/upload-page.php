@@ -4,8 +4,6 @@ if (!defined('ABSPATH')) {
 }
 
 $bunny_api = new Eightam_Bunny_Video_Library_API();
-$library_id = get_option('eightam_bunny_library_id');
-$api_key = get_option('eightam_bunny_api_key');
 ?>
 
 <div class="wrap">
@@ -356,7 +354,7 @@ jQuery(document).ready(function($) {
         formData.append('nonce', '<?php echo wp_create_nonce('bunny_video_upload'); ?>');
         
         try {
-            const response = await fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
+            const response = await fetch('<?php echo esc_url(admin_url('admin-ajax.php')); ?>', {
                 method: 'POST',
                 body: formData
             });
