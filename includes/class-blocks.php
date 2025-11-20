@@ -32,6 +32,10 @@ class Eightam_Bunny_Video_Library_Blocks {
                 'muted' => array(
                     'type' => 'boolean',
                     'default' => false
+                ),
+                'aspectRatio' => array(
+                    'type' => 'string',
+                    'default' => '16:9'
                 )
             )
         ));
@@ -47,6 +51,7 @@ class Eightam_Bunny_Video_Library_Blocks {
         $autoplay = isset($attributes['autoplay']) ? (bool) $attributes['autoplay'] : false;
         $loop = isset($attributes['loop']) ? (bool) $attributes['loop'] : false;
         $muted = isset($attributes['muted']) ? (bool) $attributes['muted'] : false;
+        $aspect_ratio = isset($attributes['aspectRatio']) ? sanitize_text_field($attributes['aspectRatio']) : '16:9';
         
         $bunny_api = new Eightam_Bunny_Video_Library_API();
         
@@ -59,7 +64,25 @@ class Eightam_Bunny_Video_Library_Blocks {
         
         $embed_code = $bunny_api->get_iframe_embed_code($video_id, $options);
         
-        return '<div class="bunny-video-block">' . $embed_code . '</div>';
+        // Apply aspect ratio styling
+        $aspect_ratio_style = $this->get_aspect_ratio_style($aspect_ratio);
+        
+        return '<div class="bunny-video-block" style="' . esc_attr($aspect_ratio_style) . '">' . $embed_code . '</div>';
+    }
+    
+    private function get_aspect_ratio_style($aspect_ratio) {
+        // Convert aspect ratio to padding-bottom percentage
+        $ratios = array(
+            '16:9' => '56.25%',   // 9/16 * 100
+            '4:3' => '75%',       // 3/4 * 100
+            '1:1' => '100%',      // 1/1 * 100
+            '21:9' => '42.857%',  // 9/21 * 100
+            '9:16' => '177.778%'  // 16/9 * 100
+        );
+        
+        $padding = isset($ratios[$aspect_ratio]) ? $ratios[$aspect_ratio] : $ratios['16:9'];
+        
+        return 'position: relative; padding-bottom: ' . $padding . '; height: 0; overflow: hidden;';
     }
     
     public function enqueue_block_editor_assets() {

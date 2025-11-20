@@ -221,6 +221,63 @@ $bunny_api = new Eightam_Bunny_Video_Library_API();
     background: #ffc107;
     color: #212529;
 }
+
+.bunny-upload-progress-container {
+    margin: 20px;
+    padding: 20px;
+    background: #f0f8ff;
+    border: 1px solid #0073aa;
+    border-radius: 5px;
+}
+
+.bunny-upload-progress-text {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.bunny-upload-progress-text .current {
+    color: #0073aa;
+    font-weight: bold;
+}
+
+.bunny-upload-current-file {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 4px;
+    border-left: 3px solid #0073aa;
+    font-family: monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: none;
+}
+
+.bunny-upload-progress-bar {
+    width: 100%;
+    height: 30px;
+    background: #e0e0e0;
+    border-radius: 15px;
+    overflow: hidden;
+    position: relative;
+}
+
+.bunny-upload-progress-fill {
+    height: 100%;
+    background: linear-gradient(45deg, #0073aa, #00a0d2);
+    transition: width 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+    border-radius: 15px;
+}
 </style>
 
 <script>
@@ -328,23 +385,70 @@ jQuery(document).ready(function($) {
         uploadResults.innerHTML = '';
         uploadResultsData = [];
         
+        // Create progress container
+        const progressContainer = document.createElement('div');
+        progressContainer.className = 'bunny-upload-progress-container';
+        progressContainer.innerHTML = `
+            <div class="bunny-upload-progress-text">Uploading <span class="current">0</span> of <span class="total">${files.length}</span> files...</div>
+            <div class="bunny-upload-current-file"></div>
+            <div class="bunny-upload-progress-bar">
+                <div class="bunny-upload-progress-fill" style="width: 0%"></div>
+            </div>
+        `;
+        uploadResults.appendChild(progressContainer);
+        
+        const currentFileDisplay = progressContainer.querySelector('.bunny-upload-current-file');
+        
         let completedUploads = 0;
         
-        files.forEach((file, index) => {
-            uploadFile(file, index).then(result => {
+        // Upload files sequentially to avoid overwhelming the server
+        uploadFilesSequentially(0);
+        
+        function uploadFilesSequentially(index) {
+            if (index >= files.length) {
+                // All uploads complete
+                progressContainer.remove();
+                displayResults(uploadResultsData);
+                uploadBtn.disabled = false;
+                uploadBtn.querySelector('.btn-text').style.display = 'inline';
+                uploadBtn.querySelector('.btn-progress').style.display = 'none';
+                files = [];
+                updateSelectedFiles();
+                return;
+            }
+            
+            // Show current file being uploaded
+            currentFileDisplay.textContent = '📤 ' + files[index].name;
+            currentFileDisplay.style.display = 'block';
+            
+            uploadFile(files[index], index).then(result => {
                 uploadResultsData.push(result);
                 completedUploads++;
                 
-                if (completedUploads === files.length) {
-                    displayResults(uploadResultsData);
-                    uploadBtn.disabled = false;
-                    uploadBtn.querySelector('.btn-text').style.display = 'inline';
-                    uploadBtn.querySelector('.btn-progress').style.display = 'none';
-                    files = [];
-                    updateSelectedFiles();
-                }
+                // Update progress
+                const percent = Math.round((completedUploads / files.length) * 100);
+                progressContainer.querySelector('.current').textContent = completedUploads;
+                progressContainer.querySelector('.bunny-upload-progress-fill').style.width = percent + '%';
+                
+                // Upload next file
+                uploadFilesSequentially(index + 1);
+            }).catch(error => {
+                uploadResultsData.push({
+                    file: files[index].name,
+                    success: false,
+                    message: 'Upload failed: ' + error.message
+                });
+                completedUploads++;
+                
+                // Update progress and continue
+                const percent = Math.round((completedUploads / files.length) * 100);
+                progressContainer.querySelector('.current').textContent = completedUploads;
+                progressContainer.querySelector('.bunny-upload-progress-fill').style.width = percent + '%';
+                
+                // Upload next file
+                uploadFilesSequentially(index + 1);
             });
-        });
+        }
     }
     
     async function uploadFile(file, index) {

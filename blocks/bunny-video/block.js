@@ -25,12 +25,16 @@
             muted: {
                 type: 'boolean',
                 default: false
+            },
+            aspectRatio: {
+                type: 'string',
+                default: '16:9'
             }
         },
         
         edit: function(props) {
             const { attributes, setAttributes } = props;
-            const { videoId, autoplay, loop, muted } = attributes;
+            const { videoId, autoplay, loop, muted, aspectRatio } = attributes;
             
             // Get video list from localized data
             const videos = window.bunnyVideoData ? window.bunnyVideoData.videos : [];
@@ -151,6 +155,21 @@
                             onChange: function(value) {
                                 setAttributes({ videoId: value });
                             }
+                        }),
+                        el(SelectControl, {
+                            label: __('Aspect Ratio', 'eightam-bunny-video-library'),
+                            value: aspectRatio,
+                            options: [
+                                { value: '16:9', label: '16:9 (Widescreen)' },
+                                { value: '4:3', label: '4:3 (Standard)' },
+                                { value: '1:1', label: '1:1 (Square)' },
+                                { value: '21:9', label: '21:9 (Ultrawide)' },
+                                { value: '9:16', label: '9:16 (Vertical)' }
+                            ],
+                            onChange: function(value) {
+                                setAttributes({ aspectRatio: value });
+                            },
+                            help: __('Choose the aspect ratio that matches your video dimensions', 'eightam-bunny-video-library')
                         }),
                         el(ToggleControl, {
                             label: __('Autoplay', 'eightam-bunny-video-library'),

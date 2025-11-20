@@ -2,12 +2,16 @@
 
 .bunny-video-block {
     margin: 20px 0;
+    width: 100%;
+    max-width: 100%;
 }
 
 .bunny-video-block .bunny-player {
     width: 100%;
-    aspect-ratio: 16 / 9;
-    position: relative;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
     overflow: hidden;
     background: #000;
 }
