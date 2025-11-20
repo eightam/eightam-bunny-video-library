@@ -41,6 +41,21 @@ class Eightam_Bunny_Video_Library_GitHub_Updater {
         add_filter('pre_set_site_transient_update_plugins', array($this, 'check_for_update'));
         add_filter('plugins_api', array($this, 'plugin_info'), 10, 3);
         add_filter('upgrader_post_install', array($this, 'after_install'), 10, 3);
+        
+        // Enable auto-updates support
+        add_filter('auto_update_plugin', array($this, 'enable_auto_update'), 10, 2);
+    }
+    
+    /**
+     * Enable auto-updates for this plugin
+     */
+    public function enable_auto_update($update, $item) {
+        // Check if this is our plugin
+        if (isset($item->plugin) && $item->plugin === $this->plugin_slug) {
+            // Allow auto-updates to be toggled by user
+            return $update;
+        }
+        return $update;
     }
     
     /**
@@ -60,13 +75,27 @@ class Eightam_Bunny_Video_Library_GitHub_Updater {
             if ($plugin_info) {
                 $transient->response[$this->plugin_slug] = (object) array(
                     'slug' => dirname($this->plugin_slug),
+                    'plugin' => $this->plugin_slug,
                     'new_version' => $remote_version,
                     'url' => $this->plugin_data['PluginURI'],
                     'package' => $plugin_info->download_url,
                     'tested' => isset($plugin_info->tested) ? $plugin_info->tested : '',
                     'requires_php' => isset($plugin_info->requires_php) ? $plugin_info->requires_php : '',
+                    'icons' => array(),
                 );
             }
+        } else {
+            // No update available, but add to no_update to show auto-update toggle
+            $transient->no_update[$this->plugin_slug] = (object) array(
+                'slug' => dirname($this->plugin_slug),
+                'plugin' => $this->plugin_slug,
+                'new_version' => $this->plugin_data['Version'],
+                'url' => $this->plugin_data['PluginURI'],
+                'package' => '',
+                'tested' => get_bloginfo('version'),
+                'requires_php' => '7.4',
+                'icons' => array(),
+            );
         }
         
         return $transient;
